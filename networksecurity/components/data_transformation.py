@@ -75,7 +75,7 @@ class DataTransformation:
 
             input_feature_test_df = test_df.drop(columns=[TARGET_COLUMN], axis=1)
             target_feature_test_df = test_df[TARGET_COLUMN]
-            target_feature_test_df = target_feature_test_df.replace(0,-1)
+            target_feature_test_df = target_feature_test_df.replace(-1,0)
 
             preprocessor=self.get_data_transformer_object()
 
