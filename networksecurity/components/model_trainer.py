@@ -1,6 +1,6 @@
 import os
 import sys
-import mlflow
+import mlflow #type: ignore
 
 from networksecurity.exception.exception import NetworkSecurityException
 from networksecurity.logging.logger import logging
@@ -23,7 +23,8 @@ from sklearn.ensemble import (
     RandomForestClassifier
 )
 
-
+import dagshub #type: ignore
+dagshub.init(repo_owner='Itxchi4ever', repo_name='NetworkSecurity', mlflow=True)
 
 
 
@@ -44,7 +45,16 @@ class ModelTrainer:
             mlflow.log_metric("f1_score",f1_score)
             mlflow.log_metric("precision_score",precision_score)
             mlflow.log_metric("recall_score",recall_score)
-            mlflow.sklearn.log_model(best_model,"model")
+            model_dir = "mlflow_model"
+            os.makedirs(model_dir, exist_ok=True)
+            mlflow.sklearn.save_model(best_model, path=model_dir)
+
+            # Log model to DagsHub artifacts
+            mlflow.log_artifacts(model_dir, artifact_path="model")
+
+            # Clean up local directory after logging
+            import shutil
+            shutil.rmtree(model_dir)
 
 
         
@@ -107,6 +117,7 @@ class ModelTrainer:
 
         Network_Model = NetworkModel(preprocessor = preprocessor, model= best_model)
         save_object(self.model_trainer_config.trained_model_file_path,obj=NetworkModel)
+        save_object("final_models/model.pkl",best_model)
 
         ## Model Trainer Artifact
         model_trainer_artifact = ModelTrainerArtifact(
